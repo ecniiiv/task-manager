@@ -2,6 +2,7 @@
 function main() {
   render();
   taskMaker();
+  searchFunction();
 }
 
 /** CONSTRUCTORS */
@@ -28,6 +29,7 @@ class Task {
 function taskTemplate(task) {
   const article = document.createElement("article");
   article.classList.add("task");
+  article.id = task.id;
   task.isCompleted && article.classList.toggle("completed");
 
   // TASK CONTENT
@@ -77,6 +79,8 @@ function taskTemplate(task) {
         editForm(task);
       } else if (button.name === "complete") {
         completeTask(task.id);
+      } else if (button.name === "delete") {
+        deleteTask(task.id);
       }
     });
   });
@@ -185,6 +189,29 @@ function completeTask(taskId) {
   updateStorage(items);
 }
 
+function deleteTask(taskId) {
+  let items = JSON.parse(localStorage.getItem("default"));
+  items = items.filter((item) => (item.id !== taskId ? true : false));
+
+  updateStorage(items);
+}
+
+function searchFunction() {
+  const searchInput = document.querySelector("#search-input");
+  const searchButton = document.querySelector("#search-button");
+
+  listenForClicks(searchButton, () => searchTask(searchInput.value));
+}
+
+function searchTask(query) {
+  items = JSON.parse(localStorage.getItem("default"));
+  let results = items.filter((item) => {
+    if (item.name.toLowerCase() === query.toLowerCase()) return item;
+  });
+
+  renderSearchResult(results);
+}
+
 /** UTILITIES */
 function render(group = "default") {
   const container = document.querySelector(".task-inner-container");
@@ -192,6 +219,14 @@ function render(group = "default") {
 
   container.innerHTML = "";
   if (items === null) return;
+  items.forEach((item) => {
+    container.appendChild(taskTemplate(item));
+  });
+}
+
+function renderSearchResult(items) {
+  const container = document.querySelector(".task-inner-container");
+  container.innerHTML = "";
   items.forEach((item) => {
     container.appendChild(taskTemplate(item));
   });
